@@ -325,7 +325,9 @@ class TestItemCreate:
                 main_image="https://example.com/main.jpg",
                 gallery=["https://example.com/side.jpg"],
             ),
-            inventory=InventoryModel(stock_quantity=25, stock_status=StockStatus.IN_STOCK),
+            inventory=InventoryModel(
+                stock_quantity=25, stock_status=StockStatus.IN_STOCK
+            ),
             shipping=ShippingModel(
                 is_physical=True,
                 weight=WeightModel(value=7.5, unit=WeightUnit.KG),
@@ -435,7 +437,9 @@ class TestItemListResponse:
 
     def test_empty_list_response(self):
         """Test paginated response with no items."""
-        response = ItemListResponse(items=[], total=0, page=1, page_size=50, total_pages=0)
+        response = ItemListResponse(
+            items=[], total=0, page=1, page_size=50, total_pages=0
+        )
 
         assert response.items == []
         assert response.total == 0
@@ -465,7 +469,9 @@ class TestItemListResponse:
             for i in range(1, 6)
         ]
 
-        response = ItemListResponse(items=items, total=100, page=1, page_size=5, total_pages=20)
+        response = ItemListResponse(
+            items=items, total=100, page=1, page_size=5, total_pages=20
+        )
 
         assert len(response.items) == 5
         assert response.total == 100
@@ -591,7 +597,12 @@ class TestValidationEdgeCases:
             name="Test",
             slug="test",
             price=PriceModel(amount=1000, currency="EUR"),
-            attributes={"color": "red", "size": "large", "material": "wood", "count": 5},
+            attributes={
+                "color": "red",
+                "size": "large",
+                "material": "wood",
+                "count": 5,
+            },
         )
 
         assert item.attributes["color"] == "red"

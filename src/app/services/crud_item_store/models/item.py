@@ -75,13 +75,19 @@ class DimensionUnit(str, Enum):
 class PriceModel(BaseModel):
     """Price information for an item."""
 
-    amount: int = Field(..., description="Price in smallest currency unit (e.g., cents)", ge=0)
-    currency: str = Field(..., min_length=3, max_length=3, description="ISO 4217 currency code")
+    amount: int = Field(
+        ..., description="Price in smallest currency unit (e.g., cents)", ge=0
+    )
+    currency: str = Field(
+        ..., min_length=3, max_length=3, description="ISO 4217 currency code"
+    )
     includes_tax: bool = Field(default=True, description="Whether price includes tax")
     original_amount: int | None = Field(
         default=None, description="Original price before discount (in cents)", ge=0
     )
-    tax_class: TaxClass = Field(default=TaxClass.STANDARD, description="Tax classification")
+    tax_class: TaxClass = Field(
+        default=TaxClass.STANDARD, description="Tax classification"
+    )
 
     @field_validator("currency")
     @classmethod
@@ -94,7 +100,9 @@ class MediaModel(BaseModel):
     """Media assets for an item."""
 
     main_image: str | None = Field(default=None, description="Main product image URL")
-    gallery: list[str] = Field(default_factory=list, description="Additional product images")
+    gallery: list[str] = Field(
+        default_factory=list, description="Additional product images"
+    )
 
 
 class WeightModel(BaseModel):
@@ -116,9 +124,13 @@ class DimensionsModel(BaseModel):
 class ShippingModel(BaseModel):
     """Shipping information for an item."""
 
-    is_physical: bool = Field(default=True, description="Whether item requires physical shipping")
+    is_physical: bool = Field(
+        default=True, description="Whether item requires physical shipping"
+    )
     weight: WeightModel | None = Field(default=None, description="Item weight")
-    dimensions: DimensionsModel | None = Field(default=None, description="Item dimensions")
+    dimensions: DimensionsModel | None = Field(
+        default=None, description="Item dimensions"
+    )
     shipping_class: ShippingClass = Field(
         default=ShippingClass.STANDARD, description="Shipping classification"
     )
@@ -131,18 +143,25 @@ class InventoryModel(BaseModel):
     stock_status: StockStatus = Field(
         default=StockStatus.IN_STOCK, description="Stock availability status"
     )
-    allow_backorder: bool = Field(default=False, description="Allow ordering when out of stock")
+    allow_backorder: bool = Field(
+        default=False, description="Allow ordering when out of stock"
+    )
 
 
 class IdentifiersModel(BaseModel):
     """Product identification codes."""
 
-    barcode: str | None = Field(default=None, description="Product barcode (EAN, UPC, etc.)")
+    barcode: str | None = Field(
+        default=None, description="Product barcode (EAN, UPC, etc.)"
+    )
     manufacturer_part_number: str | None = Field(
         default=None, description="Manufacturer's part number"
     )
     country_of_origin: str | None = Field(
-        default=None, min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code",
     )
 
     @field_validator("country_of_origin")
@@ -168,22 +187,39 @@ class SystemModel(BaseModel):
 class ItemBase(BaseModel):
     """Base item model with common fields."""
 
-    sku: str = Field(..., min_length=1, max_length=100, description="Stock Keeping Unit")
-    status: ItemStatus = Field(default=ItemStatus.DRAFT, description="Item lifecycle status")
-    name: str = Field(..., min_length=1, max_length=255, description="Item display name")
+    sku: str = Field(
+        ..., min_length=1, max_length=100, description="Stock Keeping Unit"
+    )
+    status: ItemStatus = Field(
+        default=ItemStatus.DRAFT, description="Item lifecycle status"
+    )
+    name: str = Field(
+        ..., min_length=1, max_length=255, description="Item display name"
+    )
     slug: str = Field(
-        ..., min_length=1, max_length=255, description="URL-friendly identifier (e.g., red-wooden-chair)"
+        ...,
+        min_length=1,
+        max_length=255,
+        description="URL-friendly identifier (e.g., red-wooden-chair)",
     )
     short_description: str | None = Field(
         default=None, max_length=500, description="Brief item description"
     )
-    description: str | None = Field(default=None, description="Full HTML/Markdown description")
-    categories: list[UUID] = Field(default_factory=list, description="Category UUID references")
+    description: str | None = Field(
+        default=None, description="Full HTML/Markdown description"
+    )
+    categories: list[UUID] = Field(
+        default_factory=list, description="Category UUID references"
+    )
     brand: str | None = Field(default=None, max_length=100, description="Brand name")
     price: PriceModel = Field(..., description="Pricing information")
     media: MediaModel = Field(default_factory=MediaModel, description="Media assets")
-    inventory: InventoryModel = Field(default_factory=InventoryModel, description="Inventory data")
-    shipping: ShippingModel = Field(default_factory=ShippingModel, description="Shipping data")
+    inventory: InventoryModel = Field(
+        default_factory=InventoryModel, description="Inventory data"
+    )
+    shipping: ShippingModel = Field(
+        default_factory=ShippingModel, description="Shipping data"
+    )
     attributes: dict[str, Any] = Field(
         default_factory=dict, description="Custom attributes (e.g., color, material)"
     )
@@ -193,7 +229,9 @@ class ItemBase(BaseModel):
     custom: dict[str, Any] = Field(
         default_factory=dict, description="Custom plugin data (extensibility)"
     )
-    system: SystemModel = Field(default_factory=SystemModel, description="System metadata")
+    system: SystemModel = Field(
+        default_factory=SystemModel, description="System metadata"
+    )
 
     @field_validator("slug")
     @classmethod

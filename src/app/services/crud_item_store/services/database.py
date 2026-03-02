@@ -60,7 +60,9 @@ class ItemRepository(BaseRepository[ItemDB]):
         """
         return await self.get_by(slug=slug)
 
-    async def get_by_status(self, status: str, skip: int = 0, limit: int = 100) -> list[ItemDB]:
+    async def get_by_status(
+        self, status: str, skip: int = 0, limit: int = 100
+    ) -> list[ItemDB]:
         """
         Get items by status with pagination.
 
@@ -92,9 +94,7 @@ class ItemRepository(BaseRepository[ItemDB]):
             >>> items = await repo.search_by_name("chair")
         """
         stmt = (
-            select(self.model)
-            .where(self.model.name.ilike(f"%{query}%"))
-            .limit(limit)
+            select(self.model).where(self.model.name.ilike(f"%{query}%")).limit(limit)
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())

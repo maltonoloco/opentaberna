@@ -31,35 +31,28 @@ def valid_item_data():
             "currency": "USD",
             "includes_tax": True,
             "original_amount": None,
-            "tax_class": "standard"
+            "tax_class": "standard",
         },
-        "media": {
-            "main_image": None,
-            "gallery": []
-        },
+        "media": {"main_image": None, "gallery": []},
         "inventory": {
             "stock_quantity": 100,
             "stock_status": "in_stock",
-            "allow_backorder": False
+            "allow_backorder": False,
         },
         "shipping": {
             "is_physical": True,
             "shipping_class": "standard",
             "weight": None,
-            "dimensions": None
+            "dimensions": None,
         },
         "attributes": {},
         "identifiers": {
             "barcode": None,
             "manufacturer_part_number": None,
-            "country_of_origin": None
+            "country_of_origin": None,
         },
         "custom": {},
-        "system": {
-            "version": 1,
-            "source": "api",
-            "locale": "en_US"
-        }
+        "system": {"version": 1, "source": "api", "locale": "en_US"},
     }
 
 
@@ -80,7 +73,7 @@ class TestItemCRUD:
     def test_create_item_success(self, valid_item_data):
         """Test creating a new item."""
         response = requests.post(API_BASE_URL + "/", json=valid_item_data)
-        
+
         assert response.status_code == 201
         data = response.json()
         assert data["sku"] == valid_item_data["sku"]
@@ -88,7 +81,7 @@ class TestItemCRUD:
         assert "uuid" in data
         assert "created_at" in data
         assert "updated_at" in data
-        
+
         # Cleanup
         requests.delete(f"{API_BASE_URL}/{data['uuid']}")
 
@@ -100,9 +93,9 @@ class TestItemCRUD:
             "slug": "duplicate-slug",
             "brand": "Test",
             "categories": [str(uuid.uuid4())],
-            "price": {"amount": 1000, "currency": "USD"}
+            "price": {"amount": 1000, "currency": "USD"},
         }
-        
+
         response = requests.post(API_BASE_URL + "/", json=duplicate_data)
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"]
@@ -110,7 +103,7 @@ class TestItemCRUD:
     def test_get_item_by_uuid(self, created_item):
         """Test retrieving an item by UUID."""
         response = requests.get(f"{API_BASE_URL}/{created_item['uuid']}")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["uuid"] == created_item["uuid"]
@@ -120,14 +113,14 @@ class TestItemCRUD:
         """Test retrieving non-existent item returns 404."""
         fake_uuid = str(uuid.uuid4())
         response = requests.get(f"{API_BASE_URL}/{fake_uuid}")
-        
+
         assert response.status_code == 404
         assert "not found" in response.json()["detail"]
 
     def test_get_item_by_slug(self, created_item):
         """Test retrieving an item by slug."""
         response = requests.get(f"{API_BASE_URL}/by-slug/{created_item['slug']}")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["uuid"] == created_item["uuid"]
@@ -136,7 +129,7 @@ class TestItemCRUD:
     def test_list_items(self, created_item):
         """Test listing items with pagination."""
         response = requests.get(API_BASE_URL + "/")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert "items" in data
@@ -149,7 +142,7 @@ class TestItemCRUD:
     def test_list_items_pagination(self, created_item):
         """Test pagination parameters."""
         response = requests.get(API_BASE_URL + "/?skip=0&limit=10")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["page_size"] == 10
@@ -159,14 +152,13 @@ class TestItemCRUD:
         """Test updating an item."""
         update_data = {
             "name": "Updated Product Name",
-            "price": {"amount": 15999, "currency": "EUR"}
+            "price": {"amount": 15999, "currency": "EUR"},
         }
-        
+
         response = requests.patch(
-            f"{API_BASE_URL}/{created_item['uuid']}", 
-            json=update_data
+            f"{API_BASE_URL}/{created_item['uuid']}", json=update_data
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Updated Product Name"
@@ -179,7 +171,7 @@ class TestItemCRUD:
         """Test updating non-existent item returns 404."""
         fake_uuid = str(uuid.uuid4())
         update_data = {"name": "Updated"}
-        
+
         response = requests.patch(f"{API_BASE_URL}/{fake_uuid}", json=update_data)
         assert response.status_code == 404
 
@@ -187,13 +179,15 @@ class TestItemCRUD:
         """Test deleting an item."""
         # Create item
         create_response = requests.post(API_BASE_URL + "/", json=valid_item_data)
-        assert create_response.status_code == 201, f"Failed to create item: {create_response.json()}"
+        assert create_response.status_code == 201, (
+            f"Failed to create item: {create_response.json()}"
+        )
         item_uuid = create_response.json()["uuid"]
-        
+
         # Delete item
         delete_response = requests.delete(f"{API_BASE_URL}/{item_uuid}")
         assert delete_response.status_code == 204
-        
+
         # Verify deleted
         get_response = requests.get(f"{API_BASE_URL}/{item_uuid}")
         assert get_response.status_code == 404
@@ -216,9 +210,9 @@ class TestValidation:
             "slug": "test",
             "brand": "Test",
             "categories": [str(uuid.uuid4())],
-            "price": {"amount": 99.99, "currency": "USD"}  # Should be int
+            "price": {"amount": 99.99, "currency": "USD"},  # Should be int
         }
-        
+
         response = requests.post(API_BASE_URL + "/", json=invalid_data)
         assert response.status_code == 422
 
@@ -230,9 +224,9 @@ class TestValidation:
             "slug": "test",
             "brand": "Test",
             "categories": ["not-a-uuid"],
-            "price": {"amount": 9999, "currency": "USD"}
+            "price": {"amount": 9999, "currency": "USD"},
         }
-        
+
         response = requests.post(API_BASE_URL + "/", json=invalid_data)
         assert response.status_code == 422
 
@@ -242,7 +236,7 @@ class TestValidation:
             "name": "Test"
             # Missing sku, slug, brand, categories, price
         }
-        
+
         response = requests.post(API_BASE_URL + "/", json=invalid_data)
         assert response.status_code == 422
 

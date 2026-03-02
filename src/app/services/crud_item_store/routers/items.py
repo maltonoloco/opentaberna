@@ -163,8 +163,12 @@ async def get_item(
 )
 async def list_items(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
-    limit: int = Query(50, ge=1, le=100, description="Maximum number of items to return"),
-    status_filter: ItemStatus | None = Query(None, alias="status", description="Filter by status"),
+    limit: int = Query(
+        50, ge=1, le=100, description="Maximum number of items to return"
+    ),
+    status_filter: ItemStatus | None = Query(
+        None, alias="status", description="Filter by status"
+    ),
     session: AsyncSession = Depends(get_session_dependency),
 ) -> ItemListResponse:
     """

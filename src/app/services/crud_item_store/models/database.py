@@ -5,11 +5,10 @@ SQLAlchemy ORM models for the item-store service.
 These models map to PostgreSQL tables and use JSONB for nested structures.
 """
 
-from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, Integer, String, Text
+from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 

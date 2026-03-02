@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.services.crud_item_store import router as item_store_router
-from app.services.crud_item_store.models.database import ItemDB  # Import to register model
 from app.shared.database.base import Base
 from app.shared.database.engine import close_database, get_engine, init_database
 
