@@ -77,8 +77,8 @@ flowchart TD
   F --> G[Customer completes payment on PSP]
   G --> H[PSP sends Webhook: payment_succeeded / payment_failed]
 
-  H --> I{Webhook verified + idempotent?}
-  I -->|duplicate| I1[Return 200 OK (no-op)]
+  H --> I{"Webhook verified + idempotent?"}
+  I -->|duplicate| I1["Return 200 OK (no-op)"]
   I -->|new| J[DB txn: Payment=SUCCEEDED]
   J --> K[Order status -> PAID]
   K --> L[Commit inventory: decrement on_hand + release reservation]
@@ -89,7 +89,7 @@ flowchart TD
   O -->|no| O1[Retry/backoff + alert admin]
   O -->|yes| P[Shipment: tracking + label stored]
   P --> Q[Order status -> READY_TO_SHIP]
-  Q --> R[Admin pick & pack with packing slip]
+  Q --> R["Admin pick & pack with packing slip"]
   R --> S[Hand over to carrier / pickup scan]
   S --> T[Order status -> SHIPPED]
   T --> U[Send tracking email to customer]
