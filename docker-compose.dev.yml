@@ -1,10 +1,12 @@
 volumes:
-  mysql_data:
+  postgres_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ./opentaberna-mysql
+      device: ./opentaberna-postgres
+  redis_data:
+    driver: local
 
 services:
   opentaberna-api:
@@ -27,20 +29,19 @@ services:
       - opentaberna-redis
 
   opentaberna-db:
-    image: mysql:8.3
+    image: postgres:17-alpine
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-opentaberna}
-      MYSQL_USER: ${MYSQL_USER:-opentaberna_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-opentaberna_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opentaberna_password}
+      POSTGRES_DB: ${POSTGRES_DB:-opentaberna}
+      POSTGRES_USER: ${POSTGRES_USER:-opentaberna}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
     restart: unless-stopped
     container_name: opentaberna-db
     expose:
-      - "3306"
+      - "5432"
 
   opentaberna-redis:
     image: redis:8-alpine
