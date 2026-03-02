@@ -71,9 +71,9 @@ flowchart TD
   A[Customer views product] --> B[Add to cart]
   B --> C[Start checkout]
   C --> D[Create Order: DRAFT]
-  D --> E[Reserve inventory (StockReservation)]
+  D --> E["Reserve inventory (StockReservation)"]
   E -->|insufficient stock| E1[Reject / show out of stock]
-  E -->|ok| F[Create Payment Session/Intent (PSP)]
+  E -->|ok| F["Create Payment Session/Intent (PSP)"]
   F --> G[Customer completes payment on PSP]
   G --> H[PSP sends Webhook: payment_succeeded / payment_failed]
 
@@ -84,8 +84,8 @@ flowchart TD
   K --> L[Commit inventory: decrement on_hand + release reservation]
   L --> M[Enqueue fulfillment job: CREATE_LABEL]
 
-  M --> N[Worker calls Carrier API (e.g., DHL)]
-  N --> O{Label created?}
+  M --> N["Worker calls Carrier API (e.g. DHL)"]
+  N --> O{"Label created?"}
   O -->|no| O1[Retry/backoff + alert admin]
   O -->|yes| P[Shipment: tracking + label stored]
   P --> Q[Order status -> READY_TO_SHIP]
