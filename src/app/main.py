@@ -1,8 +1,29 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.services.crud_item_store import router as item_store_router
+from app.services.crud_item_store.models.database import ItemDB  # Import to register model
+from app.shared.database.base import Base
+from app.shared.database.engine import close_database, get_engine, init_database
 
-app = FastAPI(title="OpenTaberna API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events."""
+    # Startup: Initialize database and create tables
+    await init_database()
+    engine = get_engine()
+    async with engine.begin() as conn:
+        # This creates all tables from SQLAlchemy models that inherit from Base
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Shutdown
+    await close_database()
+
+
+app = FastAPI(title="OpenTaberna API", lifespan=lifespan)
 
 
 origins = ["*"]  # Consider restricting this in a production environment
@@ -16,8 +37,8 @@ app.add_middleware(
 )
 
 
-# Example router (you can replace this with your actual router)
-# app.include_router(any_router.router)
+# Include crud-item-store router
+app.include_router(item_store_router, prefix="/v1")
 
 
 if __name__ == "__main__":
