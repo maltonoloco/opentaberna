@@ -33,18 +33,17 @@ jobs:
     
     # Service containers for testing
     services:
-      # MySQL for main database
-      mysql:
-        image: mysql:8.3
+      # PostgreSQL for main database
+      postgres:
+        image: postgres:17-alpine
         env:
-          MYSQL_ROOT_PASSWORD: test_root_password
-          MYSQL_DATABASE: yggdrasil_test
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: opentaberna_test
+          POSTGRES_USER: test_user
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h localhost"
+          --health-cmd="pg_isready -U test_user"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -72,7 +71,7 @@ jobs:
       - name: � Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-client redis-tools
+          sudo apt-get install -y postgresql-client redis-tools
           echo "✅ System dependencies installed"
 
       - name: �📦 Install uv
@@ -94,10 +93,10 @@ jobs:
           for i in {1..30}; do
             echo "Attempt $i/30..."
             
-            # Check MySQL
-            if mysqladmin ping -h 127.0.0.1 -P 3306 -u root -ptest_root_password --silent 2>/dev/null; then
-              echo "✅ MySQL is ready"
-              MYSQL_READY=1
+            # Check PostgreSQL
+            if pg_isready -h 127.0.0.1 -p 5432 -U test_user 2>/dev/null; then
+              echo "✅ PostgreSQL is ready"
+              PG_READY=1
             fi
             
             # Check Redis
@@ -107,7 +106,7 @@ jobs:
             fi
             
             # All services ready?
-            if [ "$MYSQL_READY" = "1" ] && [ "$REDIS_READY" = "1" ]; then
+            if [ "$PG_READY" = "1" ] && [ "$REDIS_READY" = "1" ]; then
               echo "✅ All services are ready!"
               exit 0
             fi
@@ -122,11 +121,7 @@ jobs:
         run: |
           cat << EOF > .env
           # Database Configuration
-          MYSQL_HOST=127.0.0.1
-          MYSQL_PORT=3306
-          MYSQL_DATABASE=opentaberna_test
-          MYSQL_USER=test_user
-          MYSQL_PASSWORD=test_password
+          DATABASE_URL=postgresql+asyncpg://test_user:test_password@127.0.0.1:5432/opentaberna_test
           
           # Redis Configuration
           REDIS_URL=redis://127.0.0.1:6379/0
@@ -147,8 +142,8 @@ jobs:
         run: |
           echo "🔧 Setting up test databases..."
           
-          # Create tables in main database if needed
-          mysql -h 127.0.0.1 -P 3306 -u test_user -ptest_password yggdrasil_test -e "SHOW TABLES;" || true
+          # Verify connection and show tables
+          PGPASSWORD=test_password psql -h 127.0.0.1 -p 5432 -U test_user -d opentaberna_test -c "\dt" || true
           
           echo "✅ Databases initialized"
 
@@ -457,7 +452,7 @@ jobs:
           echo "- ✅ Docker Build: ${{ needs.build-test.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Test Environment" >> $GITHUB_STEP_SUMMARY
-          echo "- MySQL 8.3 ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- PostgreSQL 17 ✅" >> $GITHUB_STEP_SUMMARY
           echo "- Redis 8 ✅" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Ready for deployment! 🚀" >> $GITHUB_STEP_SUMMARY
