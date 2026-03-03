@@ -12,13 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.database.session import get_session_dependency
 from app.shared.exceptions import entity_not_found
+from app.shared.responses import PaginatedResponse, PageInfo
 from ..models import (
     ItemCreate,
-    ItemListResponse,
-    ItemResponse,
     ItemStatus,
     ItemUpdate,
 )
+from ..responses import ItemResponse
 from ..services.database import get_item_repository
 from ..functions import db_to_response, check_duplicate_field
 
@@ -112,7 +112,7 @@ async def get_item(
 
 @router.get(
     "/",
-    response_model=ItemListResponse,
+    response_model=PaginatedResponse[ItemResponse],
     summary="List items",
     description="List items with pagination and optional filtering by status.",
 )
@@ -125,7 +125,7 @@ async def list_items(
         None, alias="status", description="Filter by status"
     ),
     session: AsyncSession = Depends(get_session_dependency),
-) -> ItemListResponse:
+) -> PaginatedResponse[ItemResponse]:
     """
     List items with pagination.
 
@@ -136,7 +136,7 @@ async def list_items(
         session: Database session
 
     Returns:
-        Paginated list of items
+        Paginated list of items with page info
     """
     repo = get_item_repository(session)
 
@@ -148,16 +148,22 @@ async def list_items(
     items = await repo.get_all(skip=skip, limit=limit, **filters)
     total = await repo.count(**filters)
 
-    # Calculate pagination
+    # Calculate pagination metadata
     total_pages = (total + limit - 1) // limit if total > 0 else 0
     page = (skip // limit) + 1
 
-    return ItemListResponse(
+    return PaginatedResponse[
+        ItemResponse
+    ](
+        success=True,
         items=[db_to_response(item) for item in items],
-        total=total,
-        page=page,
-        page_size=limit,
-        total_pages=total_pages,
+        page_info=PageInfo(
+            page=page,
+            size=limit,
+            total=total,
+            pages=total_pages,
+        ),
+        message="Items retrieved successfully",
     )
 
 
