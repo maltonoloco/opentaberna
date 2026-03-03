@@ -7,10 +7,11 @@ Provides endpoints for creating, reading, updating, and deleting items.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.database.session import get_session_dependency
+from app.shared.exceptions import entity_not_found
 from ..models import (
     ItemCreate,
     ItemListResponse,
@@ -19,7 +20,7 @@ from ..models import (
     ItemUpdate,
 )
 from ..services.database import get_item_repository
-from ..functions.transformations import db_to_response
+from ..functions import db_to_response, check_duplicate_field
 
 
 router = APIRouter()
@@ -47,23 +48,13 @@ async def create_item(
         Created item
 
     Raises:
-        HTTPException 400: If SKU or slug already exists
+        ValidationError: If SKU or slug already exists
     """
     repo = get_item_repository(session)
 
-    # Check for duplicate SKU
-    if await repo.sku_exists(item.sku):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Item with SKU '{item.sku}' already exists",
-        )
-
-    # Check for duplicate slug
-    if await repo.slug_exists(item.slug):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Item with slug '{item.slug}' already exists",
-        )
+    # Check for duplicate SKU and slug using validation function
+    await check_duplicate_field(repo, "sku", item.sku)
+    await check_duplicate_field(repo, "slug", item.slug)
 
     # Convert nested Pydantic models to dicts for JSONB storage
     created = await repo.create(
@@ -108,16 +99,13 @@ async def get_item(
         Item details
 
     Raises:
-        HTTPException 404: If item not found
+        NotFoundError: If item not found
     """
     repo = get_item_repository(session)
     item = await repo.get(item_uuid)
 
     if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item with UUID '{item_uuid}' not found",
-        )
+        raise entity_not_found("Item", item_uuid)
 
     return db_to_response(item)
 
@@ -194,16 +182,13 @@ async def get_item_by_slug(
         Item details
 
     Raises:
-        HTTPException 404: If item not found
+        NotFoundError: If item not found
     """
     repo = get_item_repository(session)
     item = await repo.get_by_slug(slug)
 
     if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item with slug '{slug}' not found",
-        )
+        raise entity_not_found("Item", slug)
 
     return db_to_response(item)
 
@@ -231,36 +216,25 @@ async def update_item(
         Updated item
 
     Raises:
-        HTTPException 404: If item not found
-        HTTPException 400: If SKU or slug conflicts
+        NotFoundError: If item not found
+        ValidationError: If SKU or slug conflicts
     """
     repo = get_item_repository(session)
     item = await repo.get(item_uuid)
 
     if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item with UUID '{item_uuid}' not found",
-        )
+        raise entity_not_found("Item", item_uuid)
 
     # Get update data, excluding unset fields
     update_data = item_update.model_dump(exclude_unset=True)
 
     # Check for SKU conflicts
     if "sku" in update_data and update_data["sku"] != item.sku:
-        if await repo.sku_exists(update_data["sku"], exclude_uuid=item_uuid):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Item with SKU '{update_data['sku']}' already exists",
-            )
+        await check_duplicate_field(repo, "sku", update_data["sku"], exclude_uuid=item_uuid)
 
     # Check for slug conflicts
     if "slug" in update_data and update_data["slug"] != item.slug:
-        if await repo.slug_exists(update_data["slug"], exclude_uuid=item_uuid):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Item with slug '{update_data['slug']}' already exists",
-            )
+        await check_duplicate_field(repo, "slug", update_data["slug"], exclude_uuid=item_uuid)
 
     # Convert enums and nested models to appropriate formats
     for key, value in update_data.items():
@@ -294,15 +268,12 @@ async def delete_item(
         session: Database session
 
     Raises:
-        HTTPException 404: If item not found
+        NotFoundError: If item not found
     """
     repo = get_item_repository(session)
     item = await repo.get(item_uuid)
 
     if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item with UUID '{item_uuid}' not found",
-        )
+        raise entity_not_found("Item", item_uuid)
 
     await repo.delete(item_uuid)
