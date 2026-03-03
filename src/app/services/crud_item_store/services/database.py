@@ -5,10 +5,10 @@ Database operations for the item-store service.
 Uses the generic BaseRepository with item-specific queries.
 """
 
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.database.repository import BaseRepository
@@ -22,8 +22,8 @@ class ItemRepository(BaseRepository[ItemDB]):
     Extends BaseRepository with item-specific queries like:
     - Get by SKU
     - Get by slug
-    - Search by status
-    - Category filtering
+    - Generic search with multiple criteria
+    - Field existence checks
     """
 
     def __init__(self, session: AsyncSession):
@@ -60,75 +60,121 @@ class ItemRepository(BaseRepository[ItemDB]):
         """
         return await self.get_by(slug=slug)
 
-    async def get_by_status(
-        self, status: str, skip: int = 0, limit: int = 100
+    async def search(
+        self,
+        name: Optional[str] = None,
+        status: Optional[str] = None,
+        category_uuid: Optional[UUID] = None,
+        brand: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100,
     ) -> list[ItemDB]:
         """
-        Get items by status with pagination.
+        Generic search function for items with multiple optional criteria.
+
+        All criteria are combined with AND logic. Any criteria left as None
+        will be ignored in the search.
 
         Args:
-            status: Item status (draft, active, archived)
+            name: Search term for name (case-insensitive partial match)
+            status: Exact status match (draft, active, archived)
+            category_uuid: Filter by category UUID
+            brand: Filter by brand name
             skip: Number of records to skip
             limit: Maximum number of records to return
-
-        Returns:
-            List of items
-
-        Example:
-            >>> active_items = await repo.get_by_status("active", skip=0, limit=20)
-        """
-        return await self.get_all(skip=skip, limit=limit, status=status)
-
-    async def search_by_name(self, query: str, limit: int = 100) -> list[ItemDB]:
-        """
-        Search items by name (case-insensitive).
-
-        Args:
-            query: Search term
-            limit: Maximum number of results
 
         Returns:
             List of matching items
 
-        Example:
-            >>> items = await repo.search_by_name("chair")
+        Examples:
+            >>> # Search by name only
+            >>> items = await repo.search(name="chair")
+            
+            >>> # Search active items in category
+            >>> items = await repo.search(
+            ...     status="active",
+            ...     category_uuid=UUID("2f61e8db..."),
+            ...     limit=20
+            ... )
+            
+            >>> # Search by brand and status
+            >>> items = await repo.search(brand="TestBrand", status="active")
         """
-        stmt = (
-            select(self.model).where(self.model.name.ilike(f"%{query}%")).limit(limit)
-        )
+        stmt = select(self.model)
+        conditions = []
+
+        # Add filters based on provided criteria
+        if name is not None:
+            conditions.append(self.model.name.ilike(f"%{name}%"))
+
+        if status is not None:
+            conditions.append(self.model.status == status)
+
+        if category_uuid is not None:
+            conditions.append(
+                self.model.categories.contains([str(category_uuid)])
+            )
+
+        if brand is not None:
+            conditions.append(self.model.brand == brand)
+
+        # Combine all conditions with AND
+        if conditions:
+            stmt = stmt.where(and_(*conditions))
+
+        # Apply pagination
+        stmt = stmt.offset(skip).limit(limit)
+
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_category(
-        self, category_uuid: UUID, skip: int = 0, limit: int = 100
-    ) -> list[ItemDB]:
+    async def field_exists(
+        self, 
+        field_name: str, 
+        field_value: Any, 
+        exclude_uuid: Optional[UUID] = None
+    ) -> bool:
         """
-        Get items in a specific category.
+        Generic method to check if a field value already exists.
 
         Args:
-            category_uuid: Category UUID
-            skip: Number of records to skip
-            limit: Maximum number of records to return
+            field_name: Name of the field to check (e.g., "sku", "slug")
+            field_value: Value to check for existence
+            exclude_uuid: Optionally exclude an item UUID (for updates)
 
         Returns:
-            List of items in category
+            True if field value exists, False otherwise
 
-        Example:
-            >>> items = await repo.get_by_category(UUID("2f61e8db..."))
+        Raises:
+            ValueError: If field_name is not a valid column
+
+        Examples:
+            >>> # Check if SKU exists
+            >>> exists = await repo.field_exists("sku", "CHAIR-RED-001")
+            
+            >>> # Check if slug exists, excluding current item
+            >>> exists = await repo.field_exists(
+            ...     "slug", "red-chair", exclude_uuid=item_uuid
+            ... )
         """
-        # Query JSONB array for category UUID
-        stmt = (
-            select(self.model)
-            .where(self.model.categories.contains([str(category_uuid)]))
-            .offset(skip)
-            .limit(limit)
-        )
+        # Validate field exists on model
+        if not hasattr(self.model, field_name):
+            raise ValueError(f"Field '{field_name}' does not exist on ItemDB model")
+
+        field = getattr(self.model, field_name)
+        stmt = select(self.model.uuid).where(field == field_value)
+
+        if exclude_uuid:
+            stmt = stmt.where(self.model.uuid != exclude_uuid)
+
         result = await self.session.execute(stmt)
-        return list(result.scalars().all())
+        return result.scalar_one_or_none() is not None
 
     async def sku_exists(self, sku: str, exclude_uuid: Optional[UUID] = None) -> bool:
         """
         Check if SKU already exists.
+
+        This is a convenience wrapper around field_exists() for better readability.
 
         Args:
             sku: SKU to check
@@ -140,16 +186,13 @@ class ItemRepository(BaseRepository[ItemDB]):
         Example:
             >>> exists = await repo.sku_exists("CHAIR-RED-001")
         """
-        stmt = select(self.model.uuid).where(self.model.sku == sku)
-        if exclude_uuid:
-            stmt = stmt.where(self.model.uuid != exclude_uuid)
-
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none() is not None
+        return await self.field_exists("sku", sku, exclude_uuid)
 
     async def slug_exists(self, slug: str, exclude_uuid: Optional[UUID] = None) -> bool:
         """
         Check if slug already exists.
+
+        This is a convenience wrapper around field_exists() for better readability.
 
         Args:
             slug: Slug to check
@@ -161,12 +204,7 @@ class ItemRepository(BaseRepository[ItemDB]):
         Example:
             >>> exists = await repo.slug_exists("red-wooden-chair")
         """
-        stmt = select(self.model.uuid).where(self.model.slug == slug)
-        if exclude_uuid:
-            stmt = stmt.where(self.model.uuid != exclude_uuid)
-
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none() is not None
+        return await self.field_exists("slug", slug, exclude_uuid)
 
 
 def get_item_repository(session: AsyncSession) -> ItemRepository:
