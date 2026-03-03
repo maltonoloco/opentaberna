@@ -4,12 +4,11 @@ Item Store Pydantic Models
 This module defines all Pydantic models for the item-store service.
 """
 
-from datetime import datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ============================================================================

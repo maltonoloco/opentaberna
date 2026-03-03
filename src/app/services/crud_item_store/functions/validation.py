@@ -36,10 +36,10 @@ async def check_duplicate_field(
     Examples:
         >>> # Check for duplicate SKU
         >>> await check_duplicate_field(repo, "sku", "CHAIR-RED-001")
-        
+
         >>> # Check for duplicate slug, excluding current item
         >>> await check_duplicate_field(repo, "slug", "red-chair", exclude_uuid=item_uuid)
-        
+
         >>> # Can check any field on the model
         >>> await check_duplicate_field(repo, "name", "Test Product")
     """

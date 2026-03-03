@@ -89,14 +89,14 @@ class ItemRepository(BaseRepository[ItemDB]):
         Examples:
             >>> # Search by name only
             >>> items = await repo.search(name="chair")
-            
+
             >>> # Search active items in category
             >>> items = await repo.search(
             ...     status="active",
             ...     category_uuid=UUID("2f61e8db..."),
             ...     limit=20
             ... )
-            
+
             >>> # Search by brand and status
             >>> items = await repo.search(brand="TestBrand", status="active")
         """
@@ -111,9 +111,7 @@ class ItemRepository(BaseRepository[ItemDB]):
             conditions.append(self.model.status == status)
 
         if category_uuid is not None:
-            conditions.append(
-                self.model.categories.contains([str(category_uuid)])
-            )
+            conditions.append(self.model.categories.contains([str(category_uuid)]))
 
         if brand is not None:
             conditions.append(self.model.brand == brand)
@@ -129,10 +127,7 @@ class ItemRepository(BaseRepository[ItemDB]):
         return list(result.scalars().all())
 
     async def field_exists(
-        self, 
-        field_name: str, 
-        field_value: Any, 
-        exclude_uuid: Optional[UUID] = None
+        self, field_name: str, field_value: Any, exclude_uuid: Optional[UUID] = None
     ) -> bool:
         """
         Generic method to check if a field value already exists.
@@ -151,7 +146,7 @@ class ItemRepository(BaseRepository[ItemDB]):
         Examples:
             >>> # Check if SKU exists
             >>> exists = await repo.field_exists("sku", "CHAIR-RED-001")
-            
+
             >>> # Check if slug exists, excluding current item
             >>> exists = await repo.field_exists(
             ...     "slug", "red-chair", exclude_uuid=item_uuid

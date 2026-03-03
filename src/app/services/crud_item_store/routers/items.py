@@ -152,9 +152,7 @@ async def list_items(
     total_pages = (total + limit - 1) // limit if total > 0 else 0
     page = (skip // limit) + 1
 
-    return PaginatedResponse[
-        ItemResponse
-    ](
+    return PaginatedResponse[ItemResponse](
         success=True,
         items=[db_to_response(item) for item in items],
         page_info=PageInfo(
@@ -236,11 +234,15 @@ async def update_item(
 
     # Check for SKU conflicts
     if "sku" in update_data and update_data["sku"] != item.sku:
-        await check_duplicate_field(repo, "sku", update_data["sku"], exclude_uuid=item_uuid)
+        await check_duplicate_field(
+            repo, "sku", update_data["sku"], exclude_uuid=item_uuid
+        )
 
     # Check for slug conflicts
     if "slug" in update_data and update_data["slug"] != item.slug:
-        await check_duplicate_field(repo, "slug", update_data["slug"], exclude_uuid=item_uuid)
+        await check_duplicate_field(
+            repo, "slug", update_data["slug"], exclude_uuid=item_uuid
+        )
 
     # Convert enums and nested models to appropriate formats
     for key, value in update_data.items():

@@ -15,7 +15,7 @@ from ..models.item import ItemBase
 class ItemResponse(ItemBase):
     """
     Schema for item API responses.
-    
+
     Extends ItemBase with database-generated fields like UUID and timestamps.
     Used for returning item data from GET, POST, PATCH endpoints.
     """
