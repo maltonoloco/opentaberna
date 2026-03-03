@@ -97,8 +97,8 @@ class TestItemCRUD:
         }
 
         response = requests.post(API_BASE_URL + "/", json=duplicate_data)
-        assert response.status_code == 400
-        assert "already exists" in response.json()["detail"]
+        assert response.status_code == 422
+        assert "already exists" in response.json()["message"]
 
     def test_get_item_by_uuid(self, created_item):
         """Test retrieving an item by UUID."""
@@ -115,7 +115,7 @@ class TestItemCRUD:
         response = requests.get(f"{API_BASE_URL}/{fake_uuid}")
 
         assert response.status_code == 404
-        assert "not found" in response.json()["detail"]
+        assert "not found" in response.json()["message"]
 
     def test_get_item_by_slug(self, created_item):
         """Test retrieving an item by slug."""
