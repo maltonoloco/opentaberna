@@ -1,28 +1,11 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.chore import lifespan
 from app.services.crud_item_store import router as item_store_router
-from app.shared.database.base import Base
-from app.shared.database.engine import close_database, get_engine, init_database
 from app.shared.exceptions import AppException
 from app.shared.responses import ErrorResponse
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan events."""
-    # Startup: Initialize database and create tables
-    await init_database()
-    engine = get_engine()
-    async with engine.begin() as conn:
-        # This creates all tables from SQLAlchemy models that inherit from Base
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    # Shutdown
-    await close_database()
 
 
 app = FastAPI(title="OpenTaberna API", lifespan=lifespan)
