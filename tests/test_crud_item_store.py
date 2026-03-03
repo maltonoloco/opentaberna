@@ -15,8 +15,6 @@ from app.services.crud_item_store.models import (
     IdentifiersModel,
     InventoryModel,
     ItemCreate,
-    ItemListResponse,
-    ItemResponse,
     ItemStatus,
     ItemUpdate,
     MediaModel,
@@ -29,6 +27,7 @@ from app.services.crud_item_store.models import (
     WeightModel,
     WeightUnit,
 )
+from app.services.crud_item_store.responses import ItemResponse
 
 
 class TestPriceModel:
@@ -430,54 +429,6 @@ class TestItemResponse:
         assert isinstance(response.uuid, UUID)
         assert isinstance(response.created_at, datetime)
         assert isinstance(response.updated_at, datetime)
-
-
-class TestItemListResponse:
-    """Test ItemListResponse model."""
-
-    def test_empty_list_response(self):
-        """Test paginated response with no items."""
-        response = ItemListResponse(
-            items=[], total=0, page=1, page_size=50, total_pages=0
-        )
-
-        assert response.items == []
-        assert response.total == 0
-        assert response.total_pages == 0
-
-    def test_list_response_with_items(self):
-        """Test paginated response with items."""
-        items = [
-            ItemResponse(
-                uuid=uuid4(),
-                sku=f"TEST-{i}",
-                name=f"Item {i}",
-                slug=f"item-{i}",
-                status=ItemStatus.ACTIVE,
-                price=PriceModel(amount=1000 * i, currency="EUR"),
-                media=MediaModel(),
-                inventory=InventoryModel(),
-                shipping=ShippingModel(),
-                categories=[],
-                attributes={},
-                identifiers=IdentifiersModel(),
-                custom={},
-                system=SystemModel(),
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
-            for i in range(1, 6)
-        ]
-
-        response = ItemListResponse(
-            items=items, total=100, page=1, page_size=5, total_pages=20
-        )
-
-        assert len(response.items) == 5
-        assert response.total == 100
-        assert response.page == 1
-        assert response.page_size == 5
-        assert response.total_pages == 20
 
 
 class TestEnums:
