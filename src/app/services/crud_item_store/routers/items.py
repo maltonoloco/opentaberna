@@ -165,7 +165,7 @@ async def list_items(
     if status_filter:
         filters["status"] = status_filter.value
 
-    items = await repo.get_all(skip=skip, limit=limit, **filters)
+    items = await repo.filter(skip=skip, limit=limit, **filters)
     total = await repo.count(**filters)
 
     # Calculate pagination metadata
