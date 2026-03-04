@@ -70,9 +70,7 @@ DATABASE_ERROR_EXAMPLE = {
     "status_code": 500,
     "error_code": "database_query_error",
     "error_category": "database",
-    "details": {
-        "error_type": "DatabaseError"
-    },
+    "details": {"error_type": "DatabaseError"},
 }
 
 INTERNAL_ERROR_EXAMPLE = {
@@ -81,9 +79,7 @@ INTERNAL_ERROR_EXAMPLE = {
     "status_code": 500,
     "error_code": "internal_error",
     "error_category": "internal",
-    "details": {
-        "error_type": "ValueError"
-    },
+    "details": {"error_type": "ValueError"},
 }
 
 
