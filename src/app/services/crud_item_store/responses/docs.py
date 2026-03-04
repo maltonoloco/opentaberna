@@ -24,10 +24,10 @@ INVALID_UUID_EXAMPLE = {
             {
                 "loc": ["path", "item_uuid"],
                 "msg": "Input should be a valid UUID",
-                "type": "uuid_parsing"
+                "type": "uuid_parsing",
             }
         ]
-    }
+    },
 }
 
 ITEM_NOT_FOUND_EXAMPLE = {
@@ -38,8 +38,8 @@ ITEM_NOT_FOUND_EXAMPLE = {
     "error_category": "not_found",
     "details": {
         "entity_type": "Item",
-        "entity_id": "123e4567-e89b-12d3-a456-426614174000"
-    }
+        "entity_id": "123e4567-e89b-12d3-a456-426614174000",
+    },
 }
 
 DUPLICATE_SKU_EXAMPLE = {
@@ -48,11 +48,7 @@ DUPLICATE_SKU_EXAMPLE = {
     "status_code": 422,
     "error_code": "duplicate_entry",
     "error_category": "validation",
-    "details": {
-        "entity_type": "Item",
-        "field": "sku",
-        "value": "CHAIR-001"
-    }
+    "details": {"entity_type": "Item", "field": "sku", "value": "CHAIR-001"},
 }
 
 DUPLICATE_SLUG_EXAMPLE = {
@@ -61,11 +57,7 @@ DUPLICATE_SLUG_EXAMPLE = {
     "status_code": 422,
     "error_code": "duplicate_entry",
     "error_category": "validation",
-    "details": {
-        "entity_type": "Item",
-        "field": "slug",
-        "value": "red-chair"
-    }
+    "details": {"entity_type": "Item", "field": "slug", "value": "red-chair"},
 }
 
 
@@ -86,11 +78,11 @@ CREATE_ITEM_RESPONSES = {
                 "examples": {
                     "duplicate_sku": {
                         "summary": "Duplicate SKU",
-                        "value": DUPLICATE_SKU_EXAMPLE
+                        "value": DUPLICATE_SKU_EXAMPLE,
                     },
                     "duplicate_slug": {
                         "summary": "Duplicate slug",
-                        "value": DUPLICATE_SLUG_EXAMPLE
+                        "value": DUPLICATE_SLUG_EXAMPLE,
                     },
                     "invalid_input": {
                         "summary": "Invalid input data",
@@ -105,15 +97,15 @@ CREATE_ITEM_RESPONSES = {
                                     {
                                         "loc": ["body", "price", "amount"],
                                         "msg": "Input should be greater than or equal to 0",
-                                        "type": "greater_than_equal"
+                                        "type": "greater_than_equal",
                                     }
                                 ]
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             }
-        }
+        },
     },
     500: {
         "description": "Internal server error - database or unexpected error",
@@ -134,20 +126,12 @@ GET_ITEM_RESPONSES = {
     404: {
         "description": "Item not found",
         "model": ErrorResponse,
-        "content": {
-            "application/json": {
-                "example": ITEM_NOT_FOUND_EXAMPLE
-            }
-        }
+        "content": {"application/json": {"example": ITEM_NOT_FOUND_EXAMPLE}},
     },
     422: {
         "description": "Invalid UUID format",
         "model": ValidationErrorResponse,
-        "content": {
-            "application/json": {
-                "example": INVALID_UUID_EXAMPLE
-            }
-        }
+        "content": {"application/json": {"example": INVALID_UUID_EXAMPLE}},
     },
     500: {
         "description": "Internal server error",
@@ -183,11 +167,11 @@ LIST_ITEMS_RESPONSES = {
                                     {
                                         "loc": ["query", "skip"],
                                         "msg": "Input should be greater than or equal to 0",
-                                        "type": "greater_than_equal"
+                                        "type": "greater_than_equal",
                                     }
                                 ]
-                            }
-                        }
+                            },
+                        },
                     },
                     "invalid_limit": {
                         "summary": "Limit out of range",
@@ -202,11 +186,11 @@ LIST_ITEMS_RESPONSES = {
                                     {
                                         "loc": ["query", "limit"],
                                         "msg": "Input should be less than or equal to 100",
-                                        "type": "less_than_equal"
+                                        "type": "less_than_equal",
                                     }
                                 ]
-                            }
-                        }
+                            },
+                        },
                     },
                     "invalid_status": {
                         "summary": "Invalid status value",
@@ -221,15 +205,15 @@ LIST_ITEMS_RESPONSES = {
                                     {
                                         "loc": ["query", "status"],
                                         "msg": "Input should be 'draft', 'active' or 'archived'",
-                                        "type": "enum"
+                                        "type": "enum",
                                     }
                                 ]
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             }
-        }
+        },
     },
     500: {
         "description": "Internal server error",
@@ -258,13 +242,10 @@ GET_ITEM_BY_SLUG_RESPONSES = {
                     "status_code": 404,
                     "error_code": "entity_not_found",
                     "error_category": "not_found",
-                    "details": {
-                        "entity_type": "Item",
-                        "entity_id": "red-chair"
-                    }
+                    "details": {"entity_type": "Item", "entity_id": "red-chair"},
                 }
             }
-        }
+        },
     },
     500: {
         "description": "Internal server error",
@@ -285,11 +266,7 @@ UPDATE_ITEM_RESPONSES = {
     404: {
         "description": "Item not found",
         "model": ErrorResponse,
-        "content": {
-            "application/json": {
-                "example": ITEM_NOT_FOUND_EXAMPLE
-            }
-        }
+        "content": {"application/json": {"example": ITEM_NOT_FOUND_EXAMPLE}},
     },
     422: {
         "description": "Validation error - duplicate SKU/slug, invalid UUID, or invalid input data",
@@ -308,9 +285,9 @@ UPDATE_ITEM_RESPONSES = {
                             "details": {
                                 "entity_type": "Item",
                                 "field": "sku",
-                                "value": "CHAIR-002"
-                            }
-                        }
+                                "value": "CHAIR-002",
+                            },
+                        },
                     },
                     "duplicate_slug": {
                         "summary": "Slug conflicts with another item",
@@ -323,13 +300,13 @@ UPDATE_ITEM_RESPONSES = {
                             "details": {
                                 "entity_type": "Item",
                                 "field": "slug",
-                                "value": "blue-chair"
-                            }
-                        }
+                                "value": "blue-chair",
+                            },
+                        },
                     },
                     "invalid_uuid": {
                         "summary": "Invalid UUID format",
-                        "value": INVALID_UUID_EXAMPLE
+                        "value": INVALID_UUID_EXAMPLE,
                     },
                     "invalid_input": {
                         "summary": "Invalid field values",
@@ -344,15 +321,15 @@ UPDATE_ITEM_RESPONSES = {
                                     {
                                         "loc": ["body", "status"],
                                         "msg": "Input should be 'draft', 'active' or 'archived'",
-                                        "type": "enum"
+                                        "type": "enum",
                                     }
                                 ]
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             }
-        }
+        },
     },
     500: {
         "description": "Internal server error",
@@ -372,20 +349,12 @@ DELETE_ITEM_RESPONSES = {
     404: {
         "description": "Item not found",
         "model": ErrorResponse,
-        "content": {
-            "application/json": {
-                "example": ITEM_NOT_FOUND_EXAMPLE
-            }
-        }
+        "content": {"application/json": {"example": ITEM_NOT_FOUND_EXAMPLE}},
     },
     422: {
         "description": "Invalid UUID format",
         "model": ValidationErrorResponse,
-        "content": {
-            "application/json": {
-                "example": INVALID_UUID_EXAMPLE
-            }
-        }
+        "content": {"application/json": {"example": INVALID_UUID_EXAMPLE}},
     },
     500: {
         "description": "Internal server error",
