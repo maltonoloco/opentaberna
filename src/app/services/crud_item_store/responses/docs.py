@@ -266,8 +266,22 @@ LIST_ITEMS_RESPONSES = {
         },
     },
     500: {
-        "description": "Internal server error",
+        "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
 
@@ -298,8 +312,22 @@ GET_ITEM_BY_SKU_RESPONSES = {
         },
     },
     500: {
-        "description": "Internal server error",
+        "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
 
