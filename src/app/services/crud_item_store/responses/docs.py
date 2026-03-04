@@ -60,6 +60,28 @@ DUPLICATE_SLUG_EXAMPLE = {
     "details": {"entity_type": "Item", "field": "slug", "value": "red-chair"},
 }
 
+DATABASE_ERROR_EXAMPLE = {
+    "success": False,
+    "message": "Database operation failed",
+    "status_code": 500,
+    "error_code": "database_query_error",
+    "error_category": "database",
+    "details": {
+        "error_type": "DatabaseError"
+    },
+}
+
+INTERNAL_ERROR_EXAMPLE = {
+    "success": False,
+    "message": "An unexpected error occurred",
+    "status_code": 500,
+    "error_code": "internal_error",
+    "error_category": "internal",
+    "details": {
+        "error_type": "ValueError"
+    },
+}
+
 
 # ============================================================================
 # Create Item Documentation
@@ -110,6 +132,20 @@ CREATE_ITEM_RESPONSES = {
     500: {
         "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
 
@@ -134,8 +170,22 @@ GET_ITEM_RESPONSES = {
         "content": {"application/json": {"example": INVALID_UUID_EXAMPLE}},
     },
     500: {
-        "description": "Internal server error",
+        "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
 
@@ -332,8 +382,22 @@ UPDATE_ITEM_RESPONSES = {
         },
     },
     500: {
-        "description": "Internal server error",
+        "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
 
@@ -357,7 +421,21 @@ DELETE_ITEM_RESPONSES = {
         "content": {"application/json": {"example": INVALID_UUID_EXAMPLE}},
     },
     500: {
-        "description": "Internal server error",
+        "description": "Internal server error - database or unexpected error",
         "model": ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "database_error": {
+                        "summary": "Database error",
+                        "value": DATABASE_ERROR_EXAMPLE,
+                    },
+                    "internal_error": {
+                        "summary": "Unexpected error",
+                        "value": INTERNAL_ERROR_EXAMPLE,
+                    },
+                }
+            }
+        },
     },
 }
