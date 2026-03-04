@@ -5,7 +5,11 @@ Contains response schemas, examples, and documentation for all item endpoints.
 Separates API documentation from business logic to keep routers clean.
 """
 
-from app.shared.responses import ErrorResponse, ValidationErrorResponse
+from app.shared.responses import (
+    ErrorResponse,
+    PaginatedResponse,
+    ValidationErrorResponse,
+)
 from ..responses import ItemResponse
 
 
@@ -197,6 +201,7 @@ GET_ITEM_RESPONSES = {
 LIST_ITEMS_RESPONSES = {
     200: {
         "description": "Items retrieved successfully",
+        "model": PaginatedResponse[ItemResponse],
     },
     422: {
         "description": "Invalid query parameters",
