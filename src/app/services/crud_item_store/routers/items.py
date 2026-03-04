@@ -13,14 +13,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.shared.database.session import get_session_dependency
 from app.shared.exceptions import entity_not_found
 from app.shared.responses import PaginatedResponse, PageInfo
-from ..models import (
-    ItemCreate,
-    ItemStatus,
-    ItemUpdate,
-)
+from ..models import ItemCreate, ItemStatus, ItemUpdate
 from ..responses import ItemResponse
-from ..services.database import get_item_repository
-from ..functions import db_to_response, check_duplicate_field
+from ..services import get_item_repository
+from ..functions import (
+    db_to_response,
+    check_duplicate_field,
+    validate_update_conflicts,
+    prepare_item_update_data,
+)
 
 
 router = APIRouter()
@@ -232,26 +233,11 @@ async def update_item(
     # Get update data, excluding unset fields
     update_data = item_update.model_dump(exclude_unset=True)
 
-    # Check for SKU conflicts
-    if "sku" in update_data and update_data["sku"] != item.sku:
-        await check_duplicate_field(
-            repo, "sku", update_data["sku"], exclude_uuid=item_uuid
-        )
+    # Validate for conflicts (SKU and slug)
+    await validate_update_conflicts(repo, item, update_data, item_uuid)
 
-    # Check for slug conflicts
-    if "slug" in update_data and update_data["slug"] != item.slug:
-        await check_duplicate_field(
-            repo, "slug", update_data["slug"], exclude_uuid=item_uuid
-        )
-
-    # Convert enums and nested models to appropriate formats
-    for key, value in update_data.items():
-        if key == "status" and isinstance(value, ItemStatus):
-            update_data[key] = value.value
-        elif key == "categories" and value is not None:
-            update_data[key] = [str(cat) for cat in value]
-        elif hasattr(value, "model_dump"):
-            update_data[key] = value.model_dump()
+    # Convert enums and nested models to database format
+    update_data = prepare_item_update_data(update_data)
 
     # Update item
     updated = await repo.update(item_uuid, **update_data)
