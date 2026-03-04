@@ -19,7 +19,7 @@ from ..responses.docs import (
     CREATE_ITEM_RESPONSES,
     GET_ITEM_RESPONSES,
     LIST_ITEMS_RESPONSES,
-    GET_ITEM_BY_SLUG_RESPONSES,
+    GET_ITEM_BY_SKU_RESPONSES,
     UPDATE_ITEM_RESPONSES,
     DELETE_ITEM_RESPONSES,
 )
@@ -186,35 +186,35 @@ async def list_items(
 
 
 @router.get(
-    "/by-slug/{slug}",
+    "/by-sku/{sku}",
     response_model=ItemResponse,
-    summary="Get item by slug",
-    description="Retrieve a single item by its URL-friendly slug.",
-    responses=GET_ITEM_BY_SLUG_RESPONSES,
+    summary="Get item by SKU",
+    description="Retrieve a single item by its SKU (Stock Keeping Unit).",
+    responses=GET_ITEM_BY_SKU_RESPONSES,
 )
-async def get_item_by_slug(
-    slug: str,
+async def get_item_by_sku(
+    sku: str,
     session: AsyncSession = Depends(get_session_dependency),
 ) -> ItemResponse:
     """
-    Get item by slug.
+    Get item by SKU.
 
     Args:
-        slug: Item slug (URL-friendly identifier)
+        sku: Item SKU (Stock Keeping Unit)
         session: Database session
 
     Returns:
         ItemResponse: Item details
 
     Raises:
-        NotFoundError (404): If item with given slug does not exist
+        NotFoundError (404): If item with given SKU does not exist
         DatabaseError (500): If database operation fails
     """
     repo = get_item_repository(session)
-    item = await repo.get_by(slug=slug)
+    item = await repo.get_by(sku=sku)
 
     if not item:
-        raise entity_not_found("Item", slug)
+        raise entity_not_found("Item", sku)
 
     return db_to_response(item)
 

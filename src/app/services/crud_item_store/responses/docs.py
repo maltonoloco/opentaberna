@@ -273,10 +273,10 @@ LIST_ITEMS_RESPONSES = {
 
 
 # ============================================================================
-# Get Item by Slug Documentation
+# Get Item by SKU Documentation
 # ============================================================================
 
-GET_ITEM_BY_SLUG_RESPONSES = {
+GET_ITEM_BY_SKU_RESPONSES = {
     200: {
         "description": "Item retrieved successfully",
         "model": ItemResponse,
@@ -288,11 +288,11 @@ GET_ITEM_BY_SLUG_RESPONSES = {
             "application/json": {
                 "example": {
                     "success": False,
-                    "message": "Item with ID 'red-chair' not found",
+                    "message": "Item with ID 'CHAIR-001' not found",
                     "status_code": 404,
                     "error_code": "entity_not_found",
                     "error_category": "not_found",
-                    "details": {"entity_type": "Item", "entity_id": "red-chair"},
+                    "details": {"entity_type": "Item", "entity_id": "CHAIR-001"},
                 }
             }
         },
