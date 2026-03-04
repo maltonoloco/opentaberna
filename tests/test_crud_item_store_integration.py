@@ -117,14 +117,14 @@ class TestItemCRUD:
         assert response.status_code == 404
         assert "not found" in response.json()["message"]
 
-    def test_get_item_by_slug(self, created_item):
-        """Test retrieving an item by slug."""
-        response = requests.get(f"{API_BASE_URL}/by-slug/{created_item['slug']}")
+    def test_get_item_by_sku(self, created_item):
+        """Test retrieving an item by SKU."""
+        response = requests.get(f"{API_BASE_URL}/by-sku/{created_item['sku']}")
 
         assert response.status_code == 200
         data = response.json()
         assert data["uuid"] == created_item["uuid"]
-        assert data["slug"] == created_item["slug"]
+        assert data["sku"] == created_item["sku"]
 
     def test_list_items(self, created_item):
         """Test listing items with pagination."""
