@@ -1,10 +1,10 @@
-"""\nItem Transformations
+"""
+Item Transformations
 
 Functions for converting between different item representations.
 """
 
 from typing import Any
-from uuid import UUID
 
 from ..models import ItemStatus, ItemDB
 from ..responses import ItemResponse
@@ -14,33 +14,18 @@ def db_to_response(item: ItemDB) -> ItemResponse:
     """
     Convert database model to response model.
 
+    Uses Pydantic's model_validate with from_attributes=True (set in ItemResponse's
+    model_config) so all field coercions (str→ItemStatus, list[str]→list[UUID], etc.)
+    are handled automatically. Adding a new field to ItemDB/ItemResponse no longer
+    requires a manual update here.
+
     Args:
         item: Database item instance
 
     Returns:
         ItemResponse with all fields
     """
-    return ItemResponse(
-        uuid=item.uuid,
-        sku=item.sku,
-        status=ItemStatus(item.status),
-        name=item.name,
-        slug=item.slug,
-        short_description=item.short_description,
-        description=item.description,
-        categories=[UUID(cat) for cat in item.categories],
-        brand=item.brand,
-        price=item.price,
-        media=item.media,
-        inventory=item.inventory,
-        shipping=item.shipping,
-        attributes=item.attributes,
-        identifiers=item.identifiers,
-        custom=item.custom,
-        system=item.system,
-        created_at=item.created_at,
-        updated_at=item.updated_at,
-    )
+    return ItemResponse.model_validate(item)
 
 
 def prepare_item_update_data(update_data: dict[str, Any]) -> dict[str, Any]:
